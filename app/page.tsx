@@ -1,4 +1,4 @@
-import { AdminLayout } from "@/components/layout/AdminLayout";
+import { AdminLayout } from "../components/layout/AdminLayout";
 import { TrendingUp, ShoppingCart, AlertCircle, Users } from "lucide-react";
 
 export default function DashboardPage() {

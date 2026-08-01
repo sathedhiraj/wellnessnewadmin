@@ -16,7 +16,7 @@ import {
   X,
   Leaf,
 } from "lucide-react";
-import { useAuth } from "@/components/auth/AuthContext";
+import { useAuth } from "../../components/auth/AuthContext";
 
 const NAV_ITEMS = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard },
@@ -86,11 +86,10 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
               key={item.name}
               href={item.href}
               onClick={() => setSidebarOpen(false)}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 ${
-                isActive
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 ${isActive
                   ? "bg-sage-600 text-white shadow-sm"
                   : "text-sage-300 hover:bg-forest-dark hover:text-white"
-              }`}
+                }`}
             >
               <item.icon
                 size={18}
@@ -144,9 +143,8 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
 
       {/* ── Mobile Sidebar Drawer ── */}
       <aside
-        className={`fixed top-0 left-0 h-full w-72 bg-forest flex flex-col z-50 shadow-2xl transform transition-transform duration-300 ease-in-out md:hidden ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        className={`fixed top-0 left-0 h-full w-72 bg-forest flex flex-col z-50 shadow-2xl transform transition-transform duration-300 ease-in-out md:hidden ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
       >
         {/* Close button */}
         <button

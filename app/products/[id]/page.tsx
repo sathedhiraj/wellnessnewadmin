@@ -1,12 +1,13 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { AdminLayout } from "../../../components/layout/AdminLayout";
 import { ArrowLeft, Save } from "lucide-react";
 import Link from "next/link";
 
-export default function EditProductPage({ params }: { params: { id: string } }) {
+export default function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -32,7 +33,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
         // or we can adjust this to fetch by handle if the URL is /products/handle instead of /products/id.
         // Wait, the page list passes product.id to the URL.
         const { data } = await axios.get("http://localhost:5000/api/v1/products");
-        const product = data.find((p: any) => p.id === params.id);
+        const product = data.find((p: any) => p.id === id);
 
         if (product) {
           setFormData({
@@ -55,7 +56,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
       }
     }
     fetchProduct();
-  }, [params.id]);
+  }, [id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,7 +76,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
         isBestseller: formData.isBestseller,
       };
 
-      await axios.put(`http://localhost:5000/api/v1/products/${params.id}`, payload);
+      await axios.put(`http://localhost:5000/api/v1/products/${id}`, payload);
       router.push("/products");
     } catch (error) {
       console.error("Failed to update product:", error);
