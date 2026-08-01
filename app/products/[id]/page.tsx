@@ -1,17 +1,13 @@
 "use client";
 import { useState, useEffect, use } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import axios from "axios";
 import { AdminLayout } from "../../../components/layout/AdminLayout";
 import { ArrowLeft, Save } from "lucide-react";
 import Link from "next/link";
 
-export default function EditProductPage() {
-  const { id } = useParams<{ id: string }>();
-
-  //export default function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
-
-  //const { id } = use(params);
+export default function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
