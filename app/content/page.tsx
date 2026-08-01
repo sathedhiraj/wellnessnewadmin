@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { AdminLayout } from "@/components/layout/AdminLayout";
+import { AdminLayout } from "../../components/layout/AdminLayout";
 import { Plus, Search, Edit2, Trash2, X, Bold, Italic, Link as LinkIcon, Image as ImageIcon, AlignLeft } from "lucide-react";
 
 type BlogPost = {

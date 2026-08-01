@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { AdminLayout } from "@/components/layout/AdminLayout";
+import { AdminLayout } from "../../components/layout/AdminLayout";
 import { Plus, Search, Edit2, Trash2 } from "lucide-react";
 import Link from "next/link";
 
@@ -59,9 +59,9 @@ export default function ProductsPage() {
         <div className="p-4 border-b border-warmgray-100 flex items-center justify-between">
           <div className="relative max-w-sm w-full">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-warmgray-400" size={16} />
-            <input 
-              type="text" 
-              placeholder="Search products..." 
+            <input
+              type="text"
+              placeholder="Search products..."
               className="w-full pl-10 pr-4 py-2 border border-warmgray-200 rounded-lg text-sm focus:outline-none focus:border-sage-500 focus:ring-1 focus:ring-sage-500"
             />
           </div>
@@ -152,7 +152,7 @@ export default function ProductsPage() {
             </tbody>
           </table>
         </div>
-        
+
         <div className="p-4 border-t border-warmgray-100 flex items-center justify-between text-sm text-warmgray-500">
           <p>Showing {products.length} products</p>
           <div className="flex gap-1">

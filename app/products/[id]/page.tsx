@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
-import { AdminLayout } from "@/components/layout/AdminLayout";
+import { AdminLayout } from "../../../components/layout/AdminLayout";
 import { ArrowLeft, Save } from "lucide-react";
 import Link from "next/link";
 
@@ -10,7 +10,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  
+
   const [formData, setFormData] = useState({
     title: "",
     handle: "",
@@ -18,9 +18,9 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
     description: "",
     ingredients: "",
     howToUse: "",
-    benefits: "", 
+    benefits: "",
     isBestseller: false,
-    images: "", 
+    images: "",
     variants: [{ name: "", sku: "", price: 0, mrp: 0, stock: 0 }]
   });
 
@@ -33,7 +33,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
         // Wait, the page list passes product.id to the URL.
         const { data } = await axios.get("http://localhost:5000/api/v1/products");
         const product = data.find((p: any) => p.id === params.id);
-        
+
         if (product) {
           setFormData({
             title: product.title || "",
@@ -108,37 +108,37 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
       <form onSubmit={handleSubmit} className="max-w-4xl space-y-6">
         <div className="bg-white p-6 rounded-xl shadow-sm border border-warmgray-100 space-y-4">
           <h3 className="text-lg font-semibold text-forest mb-4 border-b border-warmgray-50 pb-2">Basic Info</h3>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-warmgray-700 mb-1">Title *</label>
-              <input required value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} type="text" className="w-full px-3 py-2 border border-warmgray-200 rounded-lg text-sm focus:outline-none focus:border-sage-500" />
+              <input required value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} type="text" className="w-full px-3 py-2 border border-warmgray-200 rounded-lg text-sm focus:outline-none focus:border-sage-500" />
             </div>
             <div>
               <label className="block text-sm font-medium text-warmgray-700 mb-1">Handle (URL Slug) *</label>
-              <input required value={formData.handle} onChange={e => setFormData({...formData, handle: e.target.value})} type="text" className="w-full px-3 py-2 border border-warmgray-200 rounded-lg text-sm focus:outline-none focus:border-sage-500" />
+              <input required value={formData.handle} onChange={e => setFormData({ ...formData, handle: e.target.value })} type="text" className="w-full px-3 py-2 border border-warmgray-200 rounded-lg text-sm focus:outline-none focus:border-sage-500" />
             </div>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-warmgray-700 mb-1">Tagline</label>
-            <input value={formData.tagline} onChange={e => setFormData({...formData, tagline: e.target.value})} type="text" className="w-full px-3 py-2 border border-warmgray-200 rounded-lg text-sm focus:outline-none focus:border-sage-500" />
+            <input value={formData.tagline} onChange={e => setFormData({ ...formData, tagline: e.target.value })} type="text" className="w-full px-3 py-2 border border-warmgray-200 rounded-lg text-sm focus:outline-none focus:border-sage-500" />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-warmgray-700 mb-1">Description *</label>
-            <textarea required value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} rows={4} className="w-full px-3 py-2 border border-warmgray-200 rounded-lg text-sm focus:outline-none focus:border-sage-500" />
+            <textarea required value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} rows={4} className="w-full px-3 py-2 border border-warmgray-200 rounded-lg text-sm focus:outline-none focus:border-sage-500" />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-warmgray-700 mb-1">Benefits (Comma separated)</label>
-              <input value={formData.benefits} onChange={e => setFormData({...formData, benefits: e.target.value})} type="text" className="w-full px-3 py-2 border border-warmgray-200 rounded-lg text-sm focus:outline-none focus:border-sage-500" />
+              <input value={formData.benefits} onChange={e => setFormData({ ...formData, benefits: e.target.value })} type="text" className="w-full px-3 py-2 border border-warmgray-200 rounded-lg text-sm focus:outline-none focus:border-sage-500" />
             </div>
           </div>
-          
+
           <label className="flex items-center gap-2 text-sm text-warmgray-700">
-            <input type="checkbox" checked={formData.isBestseller} onChange={e => setFormData({...formData, isBestseller: e.target.checked})} className="rounded text-sage-600 focus:ring-sage-500" />
+            <input type="checkbox" checked={formData.isBestseller} onChange={e => setFormData({ ...formData, isBestseller: e.target.checked })} className="rounded text-sage-600 focus:ring-sage-500" />
             Is Bestseller
           </label>
         </div>

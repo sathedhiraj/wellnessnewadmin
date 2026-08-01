@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/components/auth/AuthContext";
+import { useAuth } from "../../components/auth/AuthContext";
 import { Eye, EyeOff, Leaf, AlertCircle } from "lucide-react";
 
 export default function LoginPage() {

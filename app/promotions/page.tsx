@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { AdminLayout } from "@/components/layout/AdminLayout";
+import { AdminLayout } from "../../components/layout/AdminLayout";
 import { Plus, Tag, Percent, Gift, Truck, Copy, ToggleLeft, ToggleRight, Trash2, X } from "lucide-react";
 
 type PromoType = "Percentage" | "Fixed Amount" | "Free Shipping" | "Buy X Get Y";

@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
-import { AdminLayout } from "@/components/layout/AdminLayout";
+import { AdminLayout } from "../../components/layout/AdminLayout";
 import { Search, Filter, Download, ChevronDown, Check, ChevronLeft, ChevronRight } from "lucide-react";
 
 const ALL_STATUSES = ["Placed", "Packed", "Shipped", "Delivered", "Cancelled"];
@@ -26,7 +26,7 @@ const STATUS_STYLES: Record<string, string> = {
 
 const STATUS_DOT: Record<string, string> = {
   Placed: "bg-amber-400",
-  Packed: "bg-blue-400",                                                                                        
+  Packed: "bg-blue-400",
   Shipped: "bg-indigo-400",
   Delivered: "bg-emerald-400",
   Cancelled: "bg-rose-400",
@@ -231,11 +231,10 @@ export default function OrdersPage() {
               <button
                 key={p}
                 onClick={() => setPage(p)}
-                className={`w-8 h-8 rounded-md text-sm font-medium transition-colors ${
-                  p === page
+                className={`w-8 h-8 rounded-md text-sm font-medium transition-colors ${p === page
                     ? "bg-forest text-white"
                     : "border border-warmgray-200 text-warmgray-600 hover:bg-warmgray-50"
-                }`}
+                  }`}
               >
                 {p}
               </button>

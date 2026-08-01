@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { AdminLayout } from "@/components/layout/AdminLayout";
+import { AdminLayout } from "../../components/layout/AdminLayout";
 import { Search, Mail, Phone, MapPin, ChevronLeft, ChevronRight, Eye } from "lucide-react";
 
 const MOCK_CUSTOMERS = [

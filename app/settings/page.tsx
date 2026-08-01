@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { AdminLayout } from "@/components/layout/AdminLayout";
+import { AdminLayout } from "../../components/layout/AdminLayout";
 import { Store, Bell, Shield, Truck, CreditCard, Globe, Save, Check, Eye, EyeOff } from "lucide-react";
 
 type Tab = "Store" | "Notifications" | "Shipping" | "Payments" | "Security" | "General";
