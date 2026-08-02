@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../../lib/api";
 import { AdminLayout } from "../../components/layout/AdminLayout";
 import { Plus, Search, Edit2, Trash2 } from "lucide-react";
 import Link from "next/link";
@@ -17,25 +17,30 @@ type Product = {
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [pagination, setPagination] = useState({ page: 1, limit: 20, total: 0, pages: 1 });
 
   useEffect(() => {
-    async function fetchProducts() {
-      try {
-        const { data } = await axios.get("http://localhost:5000/api/v1/products");
-        setProducts(data);
-      } catch (error) {
-        console.error("Failed to fetch products:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchProducts();
+    fetchProducts(1);
   }, []);
+
+  async function fetchProducts(page: number) {
+    setLoading(true);
+    try {
+      const { data } = await api.get(`/products?page=${page}&limit=20`);
+      // API returns { data: Product[], pagination: {...} }
+      setProducts(data.data);
+      setPagination(data.pagination);
+    } catch (error) {
+      console.error("Failed to fetch products:", error);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   const handleDelete = async (id: string) => {
     if (!window.confirm("Are you sure you want to delete this product?")) return;
     try {
-      await axios.delete(`http://localhost:5000/api/v1/products/${id}`);
+      await api.delete(`/products/${id}`);
       setProducts(products.filter((p) => p.id !== id));
     } catch (error) {
       console.error("Failed to delete product:", error);
@@ -154,10 +159,23 @@ export default function ProductsPage() {
         </div>
 
         <div className="p-4 border-t border-warmgray-100 flex items-center justify-between text-sm text-warmgray-500">
-          <p>Showing {products.length} products</p>
+          <p>Showing {products.length} of {pagination.total} products</p>
           <div className="flex gap-1">
-            <button className="px-3 py-1 border border-warmgray-200 rounded text-warmgray-400 cursor-not-allowed">Previous</button>
-            <button className="px-3 py-1 border border-warmgray-200 rounded hover:bg-warmgray-50">Next</button>
+            <button
+              onClick={() => fetchProducts(pagination.page - 1)}
+              disabled={pagination.page <= 1}
+              className="px-3 py-1 border border-warmgray-200 rounded disabled:text-warmgray-300 disabled:cursor-not-allowed hover:enabled:bg-warmgray-50"
+            >
+              Previous
+            </button>
+            <span className="px-3 py-1 text-warmgray-600">{pagination.page} / {pagination.pages}</span>
+            <button
+              onClick={() => fetchProducts(pagination.page + 1)}
+              disabled={pagination.page >= pagination.pages}
+              className="px-3 py-1 border border-warmgray-200 rounded disabled:text-warmgray-300 disabled:cursor-not-allowed hover:enabled:bg-warmgray-50"
+            >
+              Next
+            </button>
           </div>
         </div>
       </div>

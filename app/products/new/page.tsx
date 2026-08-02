@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import axios from "axios";
+import api from "../../../lib/api";
 import { AdminLayout } from "../../../components/layout/AdminLayout";
 import { ArrowLeft, Save } from "lucide-react";
 import Link from "next/link";
@@ -39,7 +39,7 @@ export default function NewProductPage() {
         }))
       };
 
-      await axios.post("http://localhost:5000/api/v1/products", payload);
+      await api.post("/products", payload);
       router.push("/products");
     } catch (error) {
       console.error("Failed to create product:", error);

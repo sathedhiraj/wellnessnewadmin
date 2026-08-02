@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
+import axios from "axios";
 
 interface AuthContextType {
   isLoggedIn: boolean;
@@ -35,7 +36,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setHydrated(true);
   }, []);
 
-  const login = (username: string, password: string): boolean => {
+  const login = async (username: string, password: string): Promise<boolean> => {
+    // 1. Try real backend API login
+    try {
+      const email = username.includes("@") ? username : `${username}@waveofwellness.com`;
+      const apiURL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1";
+      
+      const response = await axios.post(`${apiURL}/auth/login`, {
+        email,
+        password,
+      });
+
+      const { token, user } = response.data;
+      
+      if (token && user) {
+        setIsLoggedIn(true);
+        const adminUserData = { name: user.name, role: user.role };
+        setAdminUser(adminUserData);
+        localStorage.setItem("admin_auth", JSON.stringify(adminUserData));
+        localStorage.setItem("admin_token", token);
+        return true;
+      }
+    } catch (err: any) {
+      console.warn("Backend login failed, attempting local mock auth fallback:", err.response?.data || err.message);
+    }
+
+    // 2. Fallback to mock credentials if API is offline/unavailable or database is not seeded
     if (
       username === ADMIN_CREDENTIALS.username &&
       password === ADMIN_CREDENTIALS.password
@@ -44,6 +70,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setIsLoggedIn(true);
       setAdminUser(user);
       localStorage.setItem("admin_auth", JSON.stringify(user));
+      // Set dummy token for fallback
+      localStorage.setItem("admin_token", "mock-token-fallback");
       return true;
     }
     return false;
@@ -53,12 +81,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoggedIn(false);
     setAdminUser(null);
     localStorage.removeItem("admin_auth");
+    localStorage.removeItem("admin_token");
   };
 
   if (!hydrated) return null;
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, adminUser, login, logout }}>
+    <AuthContext.Provider value={{ isLoggedIn, adminUser, login: (u, p) => {
+      // Return a promise since login is now async
+      return login(u, p) as any;
+    }, logout }}>
       {children}
     </AuthContext.Provider>
   );
@@ -69,3 +101,4 @@ export function useAuth() {
   if (!ctx) throw new Error("useAuth must be used inside AuthProvider");
   return ctx;
 }
+

@@ -23,7 +23,7 @@ export default function LoginPage() {
     // Simulate slight network delay for UX
     await new Promise((r) => setTimeout(r, 600));
 
-    const success = login(username, password);
+    const success = await login(username, password);
     setLoading(false);
 
     if (success) {

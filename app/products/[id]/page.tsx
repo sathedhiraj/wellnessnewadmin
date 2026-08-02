@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
-import axios from "axios";
+import api from "../../../lib/api";
 import { AdminLayout } from "../../../components/layout/AdminLayout";
 import { ArrowLeft, Save } from "lucide-react";
 import Link from "next/link";
@@ -32,8 +32,8 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
         // but for editing we have the ID from the URL. Let's just fetch all and find it for now, 
         // or we can adjust this to fetch by handle if the URL is /products/handle instead of /products/id.
         // Wait, the page list passes product.id to the URL.
-        const { data } = await axios.get("http://localhost:5000/api/v1/products");
-        const product = data.find((p: any) => p.id === id);
+        const { data } = await api.get("/products?limit=100");
+        const product = data.data.find((p: any) => p.id === id);
 
         if (product) {
           setFormData({
@@ -76,7 +76,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
         isBestseller: formData.isBestseller,
       };
 
-      await axios.put(`http://localhost:5000/api/v1/products/${id}`, payload);
+      await api.put(`/products/${id}`, payload);
       router.push("/products");
     } catch (error) {
       console.error("Failed to update product:", error);
