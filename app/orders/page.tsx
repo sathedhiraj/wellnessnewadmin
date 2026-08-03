@@ -2,19 +2,9 @@
 import { useState, useRef, useEffect } from "react";
 import { AdminLayout } from "../../components/layout/AdminLayout";
 import { Search, Filter, Download, ChevronDown, Check, ChevronLeft, ChevronRight } from "lucide-react";
+import api from "../../lib/api";
 
 const ALL_STATUSES = ["Placed", "Packed", "Shipped", "Delivered", "Cancelled"];
-
-const MOCK_ORDERS = [
-  { id: "WOW10451", date: "2026-07-30T10:30:00Z", customer: "Ananya Sharma", email: "ananya@example.com", total: 1499, status: "Placed", items: 2 },
-  { id: "WOW10450", date: "2026-07-29T14:15:00Z", customer: "Rohan Patel", email: "rohan.p@example.com", total: 899, status: "Packed", items: 1 },
-  { id: "WOW10449", date: "2026-07-29T09:20:00Z", customer: "Priya Singh", email: "priya.s@example.com", total: 2499, status: "Shipped", items: 3 },
-  { id: "WOW10448", date: "2026-07-28T18:45:00Z", customer: "Vikram Mehta", email: "vikram@example.com", total: 3299, status: "Delivered", items: 4 },
-  { id: "WOW10447", date: "2026-07-28T11:10:00Z", customer: "Neha Gupta", email: "neha.g@example.com", total: 749, status: "Cancelled", items: 1 },
-  { id: "WOW10446", date: "2026-07-27T16:00:00Z", customer: "Amit Kumar", email: "amit.k@example.com", total: 1899, status: "Placed", items: 2 },
-  { id: "WOW10445", date: "2026-07-27T09:45:00Z", customer: "Sonal Desai", email: "sonal.d@example.com", total: 4299, status: "Shipped", items: 5 },
-  { id: "WOW10444", date: "2026-07-26T14:30:00Z", customer: "Rajesh Nair", email: "rajesh.n@example.com", total: 999, status: "Delivered", items: 1 },
-];
 
 const STATUS_STYLES: Record<string, string> = {
   Placed: "bg-amber-50 text-amber-700 border-amber-200",
@@ -78,12 +68,29 @@ function StatusDropdown({ orderId, current, onChange }: { orderId: string; curre
 }
 
 export default function OrdersPage() {
-  const [orders, setOrders] = useState(MOCK_ORDERS);
+  const [orders, setOrders] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("All");
   const [filterOpen, setFilterOpen] = useState(false);
   const [page, setPage] = useState(1);
   const filterRef = useRef<HTMLDivElement>(null);
+
+  const fetchOrders = async () => {
+    setLoading(true);
+    try {
+      const res = await api.get("/admin/orders");
+      setOrders(res.data.data || []);
+    } catch (error) {
+      console.error("Failed to fetch orders:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchOrders();
+  }, []);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -93,15 +100,22 @@ export default function OrdersPage() {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  const handleStatusChange = (id: string, newStatus: string) => {
-    setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, status: newStatus } : o)));
+  const handleStatusChange = async (id: string, newStatus: string) => {
+    try {
+      await api.patch(`/admin/orders/${id}/status`, { status: newStatus });
+      setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, status: newStatus } : o)));
+    } catch (error) {
+      console.error("Failed to update status:", error);
+      alert("Failed to update status.");
+    }
   };
 
   const filtered = orders.filter((o) => {
     const matchSearch =
-      o.id.toLowerCase().includes(search.toLowerCase()) ||
-      o.customer.toLowerCase().includes(search.toLowerCase()) ||
-      o.email.toLowerCase().includes(search.toLowerCase());
+      (o.orderNumber || "").toLowerCase().includes(search.toLowerCase()) ||
+      (o.id || "").toLowerCase().includes(search.toLowerCase()) ||
+      (o.customer || "").toLowerCase().includes(search.toLowerCase()) ||
+      (o.email || "").toLowerCase().includes(search.toLowerCase());
     const matchStatus = filterStatus === "All" || o.status === filterStatus;
     return matchSearch && matchStatus;
   });
@@ -118,9 +132,21 @@ export default function OrdersPage() {
           <h2 className="text-2xl font-bold text-forest">Orders</h2>
           <p className="text-sm text-warmgray-500 mt-1">View and manage customer orders.</p>
         </div>
-        <button className="flex items-center gap-2 bg-white border border-warmgray-200 text-forest px-4 py-2 rounded-lg text-sm font-medium hover:bg-warmgray-50 transition-colors shadow-sm">
-          <Download size={16} /> Export CSV
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={fetchOrders}
+            disabled={loading}
+            className="flex items-center gap-2 bg-white border border-warmgray-200 text-warmgray-600 px-3 py-2 rounded-lg text-sm font-medium hover:bg-warmgray-50 transition-colors shadow-sm disabled:opacity-50"
+          >
+            <svg className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            Refresh
+          </button>
+          <button className="flex items-center gap-2 bg-white border border-warmgray-200 text-forest px-4 py-2 rounded-lg text-sm font-medium hover:bg-warmgray-50 transition-colors shadow-sm">
+            <Download size={16} /> Export CSV
+          </button>
+        </div>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-warmgray-100 overflow-hidden">
@@ -172,21 +198,30 @@ export default function OrdersPage() {
                 <th className="px-6 py-3 font-medium">Order ID</th>
                 <th className="px-6 py-3 font-medium">Date</th>
                 <th className="px-6 py-3 font-medium">Customer</th>
+                <th className="px-6 py-3 font-medium">Phone</th>
+                <th className="px-6 py-3 font-medium">Shipping Address</th>
                 <th className="px-6 py-3 font-medium">Total</th>
+                <th className="px-6 py-3 font-medium">Payment</th>
                 <th className="px-6 py-3 font-medium">Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-warmgray-100">
-              {paginated.length === 0 ? (
+              {loading ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-10 text-center text-warmgray-400">
+                  <td colSpan={8} className="px-6 py-10 text-center text-warmgray-400 animate-pulse">
+                    Loading orders...
+                  </td>
+                </tr>
+              ) : paginated.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="px-6 py-10 text-center text-warmgray-400">
                     No orders match your search.
                   </td>
                 </tr>
               ) : (
                 paginated.map((order) => (
-                  <tr key={order.id} className="hover:bg-warmgray-50 transition-colors">
-                    <td className="px-6 py-4 font-semibold text-forest">{order.id}</td>
+                  <tr key={order.id} className="hover:bg-warmgray-50 transition-colors align-top">
+                    <td className="px-6 py-4 font-semibold text-forest whitespace-nowrap">{order.orderNumber || order.id}</td>
                     <td className="px-6 py-4 text-warmgray-600 whitespace-nowrap">
                       {new Date(order.date).toLocaleDateString("en-IN", {
                         day: "numeric", month: "short", year: "numeric",
@@ -196,9 +231,30 @@ export default function OrdersPage() {
                       <p className="font-medium text-warmgray-800">{order.customer}</p>
                       <p className="text-xs text-warmgray-500">{order.email}</p>
                     </td>
-                    <td className="px-6 py-4 text-warmgray-800 font-medium">
+                    <td className="px-6 py-4 text-warmgray-600 whitespace-nowrap">
+                      {order.shippingPhone || <span className="text-warmgray-300">—</span>}
+                    </td>
+                    <td className="px-6 py-4 text-warmgray-600 text-xs max-w-[180px]">
+                      {order.shippingLine1 ? (
+                        <>
+                          <p>{order.shippingLine1}</p>
+                          <p>{order.shippingCity}, {order.shippingState}</p>
+                          <p>{order.shippingPin}</p>
+                        </>
+                      ) : <span className="text-warmgray-300">—</span>}
+                    </td>
+                    <td className="px-6 py-4 text-warmgray-800 font-medium whitespace-nowrap">
                       ₹ {order.total.toLocaleString()}{" "}
                       <span className="text-xs text-warmgray-400 font-normal">({order.items} items)</span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border ${
+                        order.paymentMethod === "prepaid"
+                          ? "bg-sage-50 text-sage-700 border-sage-100"
+                          : "bg-amber-50 text-amber-700 border-amber-100"
+                      }`}>
+                        {order.paymentMethod === "prepaid" ? "Prepaid" : "COD"}
+                      </span>
                     </td>
                     <td className="px-6 py-4">
                       <StatusDropdown

@@ -25,6 +25,32 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
     variants: [{ name: "", sku: "", price: 0, mrp: 0, stock: 0 }]
   });
 
+  const [isHandleManual, setIsHandleManual] = useState(true);
+
+  const slugify = (text: string) => {
+    return text
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
+  };
+
+  const handleTitleChange = (title: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      title,
+      handle: isHandleManual ? prev.handle : slugify(title),
+    }));
+  };
+
+  const handleSlugChange = (handle: string) => {
+    setIsHandleManual(true);
+    setFormData((prev) => ({
+      ...prev,
+      handle: handle.toLowerCase().replace(/[^a-z0-9-]/g, ""),
+    }));
+  };
+
   useEffect(() => {
     async function fetchProduct() {
       try {
@@ -78,9 +104,10 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
 
       await api.put(`/products/${id}`, payload);
       router.push("/products");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to update product:", error);
-      alert("Failed to update product. Check console.");
+      const errMsg = error.response?.data?.error || "Failed to update product. Check console.";
+      alert(errMsg);
     } finally {
       setSaving(false);
     }
@@ -113,11 +140,11 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-warmgray-700 mb-1">Title *</label>
-              <input required value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} type="text" className="w-full px-3 py-2 border border-warmgray-200 rounded-lg text-sm focus:outline-none focus:border-sage-500" />
+              <input required value={formData.title} onChange={e => handleTitleChange(e.target.value)} type="text" className="w-full px-3 py-2 border border-warmgray-200 rounded-lg text-sm focus:outline-none focus:border-sage-500" />
             </div>
             <div>
               <label className="block text-sm font-medium text-warmgray-700 mb-1">Handle (URL Slug) *</label>
-              <input required value={formData.handle} onChange={e => setFormData({ ...formData, handle: e.target.value })} type="text" className="w-full px-3 py-2 border border-warmgray-200 rounded-lg text-sm focus:outline-none focus:border-sage-500" />
+              <input required value={formData.handle} onChange={e => handleSlugChange(e.target.value)} type="text" className="w-full px-3 py-2 border border-warmgray-200 rounded-lg text-sm focus:outline-none focus:border-sage-500" />
             </div>
           </div>
 

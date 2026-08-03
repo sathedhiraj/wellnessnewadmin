@@ -1,5 +1,6 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import api from "../../lib/api";
 import { AdminLayout } from "../../components/layout/AdminLayout";
 import { Plus, Tag, Percent, Gift, Truck, Copy, ToggleLeft, ToggleRight, Trash2, X } from "lucide-react";
 
@@ -160,9 +161,26 @@ function CreatePromoModal({ onClose, onSave }: { onClose: () => void; onSave: (p
 }
 
 export default function PromotionsPage() {
-  const [promos, setPromos] = useState<Promo[]>(INITIAL_PROMOS);
+  const [promos, setPromos] = useState<Promo[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
+
+  const fetchPromotions = async () => {
+    setLoading(true);
+    try {
+      const res = await api.get("/admin/promotions");
+      setPromos(res.data || []);
+    } catch (err) {
+      console.error("Failed to load promotions:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPromotions();
+  }, []);
 
   const handleCopy = (code: string) => {
     navigator.clipboard.writeText(code);
@@ -170,18 +188,39 @@ export default function PromotionsPage() {
     setTimeout(() => setCopied(null), 1500);
   };
 
-  const handleToggle = (id: string) => {
-    setPromos((prev) => prev.map((p) =>
-      p.id === id ? { ...p, status: p.status === "Active" ? "Inactive" : "Active" } : p
-    ));
+  const handleToggle = async (id: string, currentStatus: string) => {
+    const newStatus = currentStatus === "Active" ? "Inactive" : "Active";
+    try {
+      await api.patch(`/admin/promotions/${id}/status`, { status: newStatus });
+      setPromos((prev) =>
+        prev.map((p) => (p.id === id ? { ...p, status: newStatus } : p))
+      );
+    } catch (err) {
+      console.error("Failed to toggle promotion status:", err);
+      alert("Failed to toggle promotion status.");
+    }
   };
 
-  const handleDelete = (id: string) => {
-    if (!window.confirm("Delete this promotion?")) return;
-    setPromos((prev) => prev.filter((p) => p.id !== id));
+  const handleDelete = async (id: string) => {
+    if (!window.confirm("Delete this promotion permanently from MongoDB?")) return;
+    try {
+      await api.delete(`/admin/promotions/${id}`);
+      setPromos((prev) => prev.filter((p) => p.id !== id));
+    } catch (err) {
+      console.error("Failed to delete promotion:", err);
+      alert("Failed to delete promotion.");
+    }
   };
 
-  const handleSave = (p: Promo) => setPromos((prev) => [p, ...prev]);
+  const handleSave = async (p: any) => {
+    try {
+      const res = await api.post("/admin/promotions", p);
+      setPromos((prev) => [res.data, ...prev]);
+    } catch (err: any) {
+      console.error("Failed to create promotion:", err);
+      alert(err.response?.data?.error || "Failed to create promotion.");
+    }
+  };
 
   const activeCount = promos.filter((p) => p.status === "Active").length;
 
@@ -234,67 +273,81 @@ export default function PromotionsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-warmgray-100">
-              {promos.map((p) => (
-                <tr key={p.id} className="hover:bg-warmgray-50 transition-colors">
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono font-bold text-forest tracking-wider">{p.code}</span>
-                      <button
-                        onClick={() => handleCopy(p.code)}
-                        className="text-warmgray-400 hover:text-sage-600 transition-colors"
-                        title="Copy code"
-                      >
-                        {copied === p.code ? (
-                          <span className="text-[10px] font-medium text-emerald-600">Copied!</span>
-                        ) : (
-                          <Copy size={13} />
-                        )}
-                      </button>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-1.5 text-warmgray-600">
-                      {TYPE_ICON[p.type]}
-                      <span>{p.type}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 font-semibold text-forest">{p.value}</td>
-                  <td className="px-6 py-4 text-warmgray-600">{p.minOrder > 0 ? `₹${p.minOrder}` : "None"}</td>
-                  <td className="px-6 py-4">
-                    <div className="flex flex-col gap-1">
-                      <span className="text-warmgray-700 text-xs">{p.uses} / {p.maxUses}</span>
-                      <div className="w-24 h-1.5 bg-warmgray-100 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-sage-500 rounded-full"
-                          style={{ width: `${Math.min(100, (p.uses / p.maxUses) * 100)}%` }}
-                        />
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-warmgray-600 text-xs whitespace-nowrap">
-                    {p.validFrom} → {p.validTo || "∞"}
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium border ${STATUS_STYLE[p.status]}`}>
-                      {p.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <button
-                        onClick={() => handleToggle(p.id)}
-                        className={`transition-colors ${p.status === "Active" ? "text-emerald-500 hover:text-warmgray-400" : "text-warmgray-400 hover:text-emerald-500"}`}
-                        title={p.status === "Active" ? "Deactivate" : "Activate"}
-                      >
-                        {p.status === "Active" ? <ToggleRight size={22} /> : <ToggleLeft size={22} />}
-                      </button>
-                      <button onClick={() => handleDelete(p.id)} className="p-1.5 text-warmgray-400 hover:text-rose-600 transition-colors" title="Delete">
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
+              {loading ? (
+                <tr>
+                  <td colSpan={8} className="px-6 py-10 text-center text-warmgray-400 animate-pulse">
+                    Loading promotions...
                   </td>
                 </tr>
-              ))}
+              ) : promos.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="px-6 py-10 text-center text-warmgray-400">
+                    No promotions found. Click "Create Promotion" to add one.
+                  </td>
+                </tr>
+              ) : (
+                promos.map((p) => (
+                  <tr key={p.id} className="hover:bg-warmgray-50 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono font-bold text-forest tracking-wider">{p.code}</span>
+                        <button
+                          onClick={() => handleCopy(p.code)}
+                          className="text-warmgray-400 hover:text-sage-600 transition-colors"
+                          title="Copy code"
+                        >
+                          {copied === p.code ? (
+                            <span className="text-[10px] font-medium text-emerald-600">Copied!</span>
+                          ) : (
+                            <Copy size={13} />
+                          )}
+                        </button>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-1.5 text-warmgray-600">
+                        {TYPE_ICON[p.type]}
+                        <span>{p.type}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 font-semibold text-forest">{p.value}</td>
+                    <td className="px-6 py-4 text-warmgray-600">{p.minOrder > 0 ? `₹${p.minOrder}` : "None"}</td>
+                    <td className="px-6 py-4">
+                      <div className="flex flex-col gap-1">
+                        <span className="text-warmgray-700 text-xs">{p.uses} / {p.maxUses}</span>
+                        <div className="w-24 h-1.5 bg-warmgray-100 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-sage-500 rounded-full"
+                            style={{ width: `${Math.min(100, (p.uses / p.maxUses) * 100)}%` }}
+                          />
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-warmgray-600 text-xs whitespace-nowrap">
+                      {p.validFrom} → {p.validTo || "∞"}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium border ${STATUS_STYLE[p.status]}`}>
+                        {p.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => handleToggle(p.id, p.status)}
+                          className={`transition-colors ${p.status === "Active" ? "text-emerald-500 hover:text-warmgray-400" : "text-warmgray-400 hover:text-emerald-500"}`}
+                          title={p.status === "Active" ? "Deactivate" : "Activate"}
+                        >
+                          {p.status === "Active" ? <ToggleRight size={22} /> : <ToggleLeft size={22} />}
+                        </button>
+                        <button onClick={() => handleDelete(p.id)} className="p-1.5 text-warmgray-400 hover:text-rose-600 transition-colors" title="Delete">
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

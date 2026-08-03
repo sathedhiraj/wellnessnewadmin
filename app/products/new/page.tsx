@@ -22,6 +22,31 @@ export default function NewProductPage() {
   });
 
   const [saving, setSaving] = useState(false);
+  const [isHandleManual, setIsHandleManual] = useState(false);
+
+  const slugify = (text: string) => {
+    return text
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
+  };
+
+  const handleTitleChange = (title: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      title,
+      handle: isHandleManual ? prev.handle : slugify(title),
+    }));
+  };
+
+  const handleSlugChange = (handle: string) => {
+    setIsHandleManual(true);
+    setFormData((prev) => ({
+      ...prev,
+      handle: handle.toLowerCase().replace(/[^a-z0-9-]/g, ""), // Keep slug chars only
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,9 +66,10 @@ export default function NewProductPage() {
 
       await api.post("/products", payload);
       router.push("/products");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to create product:", error);
-      alert("Failed to create product. Check console.");
+      const errMsg = error.response?.data?.error || "Failed to create product. Check console.";
+      alert(errMsg);
     } finally {
       setSaving(false);
     }
@@ -74,11 +100,11 @@ export default function NewProductPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-warmgray-700 mb-1">Title *</label>
-              <input required value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} type="text" className="w-full px-3 py-2 border border-warmgray-200 rounded-lg text-sm focus:outline-none focus:border-sage-500" placeholder="e.g. Velvet Body Lotion" />
+              <input required value={formData.title} onChange={e => handleTitleChange(e.target.value)} type="text" className="w-full px-3 py-2 border border-warmgray-200 rounded-lg text-sm focus:outline-none focus:border-sage-500" placeholder="e.g. Velvet Body Lotion" />
             </div>
             <div>
               <label className="block text-sm font-medium text-warmgray-700 mb-1">Handle (URL Slug) *</label>
-              <input required value={formData.handle} onChange={e => setFormData({ ...formData, handle: e.target.value })} type="text" className="w-full px-3 py-2 border border-warmgray-200 rounded-lg text-sm focus:outline-none focus:border-sage-500" placeholder="e.g. velvet-body-lotion" />
+              <input required value={formData.handle} onChange={e => handleSlugChange(e.target.value)} type="text" className="w-full px-3 py-2 border border-warmgray-200 rounded-lg text-sm focus:outline-none focus:border-sage-500" placeholder="e.g. velvet-body-lotion" />
             </div>
           </div>
 
