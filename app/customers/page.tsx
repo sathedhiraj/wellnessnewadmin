@@ -30,6 +30,7 @@ interface Order {
   total: number;
   createdAt: string;
   items: OrderItem[];
+
 }
 
 interface Address {
@@ -51,12 +52,13 @@ interface Customer {
   totalSpend: number;
   addresses: Address[];
   orders: Order[];
+  phone: string;
 }
 
 const STATUS_COLOR: Record<string, string> = {
-  Placed:    "bg-blue-50 text-blue-700 border-blue-100",
-  Processing:"bg-amber-50 text-amber-700 border-amber-100",
-  Shipped:   "bg-purple-50 text-purple-700 border-purple-100",
+  Placed: "bg-blue-50 text-blue-700 border-blue-100",
+  Processing: "bg-amber-50 text-amber-700 border-amber-100",
+  Shipped: "bg-purple-50 text-purple-700 border-purple-100",
   Delivered: "bg-emerald-50 text-emerald-700 border-emerald-100",
   Cancelled: "bg-red-50 text-red-600 border-red-100",
 };
@@ -186,11 +188,11 @@ function CustomerDetailModal({ customer, onClose }: { customer: Customer; onClos
 
 export default function CustomersPage() {
   const [customers, setCustomers] = useState<Customer[]>([]);
-  const [loading, setLoading]     = useState(true);
-  const [error, setError]         = useState<string | null>(null);
-  const [search, setSearch]       = useState("");
-  const [page, setPage]           = useState(1);
-  const [selected, setSelected]   = useState<Customer | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [selected, setSelected] = useState<Customer | null>(null);
 
   const fetchCustomers = useCallback(async () => {
     setLoading(true);
@@ -216,10 +218,10 @@ export default function CustomersPage() {
   );
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const paginated  = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  const activeCount  = customers.length; // All registered users are "active"
-  const totalOrders  = customers.reduce((a, c) => a + c.orderCount, 0);
+  const activeCount = customers.length; // All registered users are "active"
+  const totalOrders = customers.reduce((a, c) => a + c.orderCount, 0);
   const totalRevenue = customers.reduce((a, c) => a + c.totalSpend, 0);
 
   return (
@@ -305,7 +307,7 @@ export default function CustomersPage() {
                         </div>
                       </div>
                     </td>
-                    {[1,2,3,4,5].map(j => (
+                    {[1, 2, 3, 4, 5].map(j => (
                       <td key={j} className="px-6 py-4"><div className="h-3 w-20 bg-warmgray-100 rounded" /></td>
                     ))}
                   </tr>
