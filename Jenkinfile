@@ -45,7 +45,7 @@ pipeline {
         stage('Deploy to Admin') {
             steps {
                 sh '''
-                ssh -o StrictHostKeyChecking=no ubuntu@10.0.1.173 << 'EOF'
+                ssh -o StrictHostKeyChecking=no ubuntu@13.235.24.76 << 'EOF'
                 cd /var/www/Admin
                 git pull origin main
                 npm install
