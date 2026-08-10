@@ -26,6 +26,12 @@ pipeline {
                 sh 'npm install'
             }
         }
+        stage("Install Dependenciend"){
+            steps{
+            sh 'npm ci'
+            }
+
+        }
 
         stage('Build Next.js') {
             steps {
