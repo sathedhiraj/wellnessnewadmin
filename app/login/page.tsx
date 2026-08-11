@@ -174,7 +174,7 @@ export default function LoginPage() {
 
           {/* Hint */}
           <p className="text-center text-xs text-sage-400 mt-6">
-            Demo credentials Dhirajpanel: <span className="text-sage-300 font-medium">admin / admin123</span>
+            Demo credentials Dhirajpanedl: <span className="text-sage-300 font-medium">admin / admin123</span>
           </p>
         </div>
       </div>
